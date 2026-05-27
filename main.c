@@ -1,6 +1,7 @@
 #include <gtk/gtk.h>
 #include <curl/curl.h>
 #include "ui.h"
+#include "config.h"
 
 static void activate(GtkApplication *app, gpointer user_data) {
     (void)user_data;
@@ -9,6 +10,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
 
 int main(int argc, char **argv) {
     curl_global_init(CURL_GLOBAL_DEFAULT);
+    load_credentials();
 
     GtkApplication *app = gtk_application_new("com.example.alicloudspend",
                                               G_APPLICATION_DEFAULT_FLAGS);

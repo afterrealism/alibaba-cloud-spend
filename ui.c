@@ -59,6 +59,52 @@ void apply_css(void) {
         "notebook stack {"
         "  background-color: " BG_DARK ";"
         "  border: none;"
+        "}"
+        ".gear-btn {"
+        "  padding: 2px 8px;"
+        "  background: transparent;"
+        "  border: none;"
+        "}"
+        ".gear-btn:hover {"
+        "  background: rgba(255,255,255,0.08);"
+        "  border-radius: 6px;"
+        "}"
+        ".gear-btn label {"
+        "  font-size: 22px;"
+        "  color: " TEXT_SECONDARY ";"
+        "}"
+        ".settings-window {"
+        "  background-color: " BG_DARK ";"
+        "}"
+        ".settings-window entry {"
+        "  background-color: #2A2A2A;"
+        "  color: " TEXT_PRIMARY ";"
+        "  border: 1px solid #444444;"
+        "  border-radius: 6px;"
+        "  padding: 8px 12px;"
+        "  min-height: 20px;"
+        "}"
+        ".settings-window entry:focus {"
+        "  border-color: " ALIBABA_ORANGE ";"
+        "}"
+        ".save-btn {"
+        "  background-color: " ALIBABA_ORANGE ";"
+        "  color: white;"
+        "  border-radius: 6px;"
+        "  padding: 8px 20px;"
+        "  font-weight: bold;"
+        "}"
+        ".save-btn:hover {"
+        "  background-color: " ALIBABA_ACCENT ";"
+        "}"
+        ".cancel-btn {"
+        "  background-color: " BORDER_SUBTLE ";"
+        "  color: " TEXT_SECONDARY ";"
+        "  border-radius: 6px;"
+        "  padding: 8px 20px;"
+        "}"
+        ".cancel-btn:hover {"
+        "  background-color: #444444;"
         "}";
     gtk_css_provider_load_from_string(provider, css);
     gtk_style_context_add_provider_for_display(
@@ -676,6 +722,122 @@ static gboolean on_timer(gpointer user_data) {
     return G_SOURCE_CONTINUE;
 }
 
+/* ── Settings dialog ─────────────────────────────────────────────── */
+
+typedef struct {
+    GtkWidget *id_entry;
+    GtkWidget *secret_entry;
+    GtkWidget *dialog;
+} SettingsData;
+
+static GtkWidget *settings_dialog = NULL;
+
+static void on_settings_dialog_destroyed(GtkWidget *widget, gpointer user_data) {
+    settings_dialog = NULL;
+}
+
+static void on_save_settings(GtkButton *button, gpointer user_data) {
+    SettingsData *sd = (SettingsData *)user_data;
+    const char *key_id = gtk_editable_get_text(GTK_EDITABLE(sd->id_entry));
+    const char *key_secret = gtk_editable_get_text(GTK_EDITABLE(sd->secret_entry));
+    save_credentials(key_id, key_secret);
+    start_fetch(&billing_card);
+    start_detailed_fetch(&services_card, &models_beijing_card, &models_singapore_card);
+    start_historical_fetch(&historical_card);
+    gtk_window_destroy(GTK_WINDOW(sd->dialog));
+}
+
+static void on_settings_clicked(GtkButton *button, gpointer user_data) {
+    if (settings_dialog) {
+        gtk_window_present(GTK_WINDOW(settings_dialog));
+        return;
+    }
+
+    GtkWidget *parent = GTK_WIDGET(user_data);
+
+    GtkWidget *dialog = gtk_window_new();
+    gtk_window_set_title(GTK_WINDOW(dialog), "Settings");
+    gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(parent));
+    gtk_window_set_modal(GTK_WINDOW(dialog), TRUE);
+    gtk_window_set_default_size(GTK_WINDOW(dialog), 420, -1);
+    gtk_window_set_resizable(GTK_WINDOW(dialog), FALSE);
+    gtk_widget_add_css_class(dialog, "settings-window");
+    g_signal_connect(dialog, "destroy", G_CALLBACK(on_settings_dialog_destroyed), NULL);
+    settings_dialog = dialog;
+
+    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 12);
+    gtk_widget_set_margin_top(box, 24);
+    gtk_widget_set_margin_bottom(box, 24);
+    gtk_widget_set_margin_start(box, 24);
+    gtk_widget_set_margin_end(box, 24);
+    gtk_window_set_child(GTK_WINDOW(dialog), box);
+
+    GtkWidget *title = gtk_label_new(NULL);
+    gtk_label_set_markup(GTK_LABEL(title),
+        "<span size='large' weight='bold' foreground='" ALIBABA_ORANGE "'>API Credentials</span>");
+    gtk_widget_set_halign(title, GTK_ALIGN_START);
+    gtk_box_append(GTK_BOX(box), title);
+
+    GtkWidget *hint = gtk_label_new(NULL);
+    gtk_label_set_markup(GTK_LABEL(hint),
+        "<span size='x-small' foreground='" TEXT_MUTED "'>Requires AliyunBSSReadOnlyAccess policy</span>");
+    gtk_widget_set_halign(hint, GTK_ALIGN_START);
+    gtk_box_append(GTK_BOX(box), hint);
+
+    GtkWidget *sep = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
+    gtk_widget_set_opacity(sep, 0.2);
+    gtk_box_append(GTK_BOX(box), sep);
+
+    GtkWidget *id_label = gtk_label_new(NULL);
+    gtk_label_set_markup(GTK_LABEL(id_label),
+        "<span size='small' foreground='" TEXT_SECONDARY "'>Access Key ID</span>");
+    gtk_widget_set_halign(id_label, GTK_ALIGN_START);
+    gtk_box_append(GTK_BOX(box), id_label);
+
+    GtkWidget *id_entry = gtk_entry_new();
+    gtk_entry_set_placeholder_text(GTK_ENTRY(id_entry), "LTAI...");
+    const char *current_id = get_access_key_id();
+    if (strlen(current_id) > 0)
+        gtk_editable_set_text(GTK_EDITABLE(id_entry), current_id);
+    gtk_box_append(GTK_BOX(box), id_entry);
+
+    GtkWidget *secret_label = gtk_label_new(NULL);
+    gtk_label_set_markup(GTK_LABEL(secret_label),
+        "<span size='small' foreground='" TEXT_SECONDARY "'>Access Key Secret</span>");
+    gtk_widget_set_halign(secret_label, GTK_ALIGN_START);
+    gtk_box_append(GTK_BOX(box), secret_label);
+
+    GtkWidget *secret_entry = gtk_entry_new();
+    gtk_entry_set_visibility(GTK_ENTRY(secret_entry), FALSE);
+    gtk_entry_set_placeholder_text(GTK_ENTRY(secret_entry), "Enter access key secret");
+    const char *current_secret = get_access_key_secret();
+    if (strlen(current_secret) > 0)
+        gtk_editable_set_text(GTK_EDITABLE(secret_entry), current_secret);
+    gtk_box_append(GTK_BOX(box), secret_entry);
+
+    GtkWidget *btn_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 12);
+    gtk_widget_set_halign(btn_box, GTK_ALIGN_END);
+    gtk_widget_set_margin_top(btn_box, 8);
+    gtk_box_append(GTK_BOX(box), btn_box);
+
+    GtkWidget *cancel_btn = gtk_button_new_with_label("Cancel");
+    gtk_widget_add_css_class(cancel_btn, "cancel-btn");
+    g_signal_connect_swapped(cancel_btn, "clicked", G_CALLBACK(gtk_window_destroy), dialog);
+    gtk_box_append(GTK_BOX(btn_box), cancel_btn);
+
+    GtkWidget *save_btn = gtk_button_new_with_label("Save & Refresh");
+    gtk_widget_add_css_class(save_btn, "save-btn");
+    SettingsData *sd = g_malloc(sizeof(SettingsData));
+    sd->id_entry = id_entry;
+    sd->secret_entry = secret_entry;
+    sd->dialog = dialog;
+    g_object_set_data_full(G_OBJECT(dialog), "settings-data", sd, g_free);
+    g_signal_connect(save_btn, "clicked", G_CALLBACK(on_save_settings), sd);
+    gtk_box_append(GTK_BOX(btn_box), save_btn);
+
+    gtk_window_present(GTK_WINDOW(dialog));
+}
+
 /* ── App builder ─────────────────────────────────────────────────── */
 
 void build_ui(GtkApplication *app) {
@@ -688,18 +850,23 @@ void build_ui(GtkApplication *app) {
     GtkWidget *main_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_window_set_child(GTK_WINDOW(window), main_box);
 
-    GtkWidget *header_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
-    gtk_widget_set_margin_top(header_box, 16);
-    gtk_widget_set_margin_bottom(header_box, 8);
-    gtk_widget_set_margin_start(header_box, 24);
-    gtk_widget_set_margin_end(header_box, 24);
-    gtk_box_append(GTK_BOX(main_box), header_box);
+    GtkWidget *header = gtk_center_box_new();
+    gtk_widget_set_margin_top(header, 16);
+    gtk_widget_set_margin_bottom(header, 8);
+    gtk_widget_set_margin_start(header, 24);
+    gtk_widget_set_margin_end(header, 24);
+    gtk_box_append(GTK_BOX(main_box), header);
 
     GtkWidget *logo = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(logo),
         "<span size='x-large' weight='bold' foreground='" ALIBABA_ACCENT "'>Alibaba Cloud</span>");
-    gtk_widget_set_halign(logo, GTK_ALIGN_CENTER);
-    gtk_box_append(GTK_BOX(header_box), logo);
+    gtk_center_box_set_center_widget(GTK_CENTER_BOX(header), logo);
+
+    GtkWidget *gear_btn = gtk_button_new_with_label("\xe2\x9a\x99");
+    gtk_widget_add_css_class(gear_btn, "flat");
+    gtk_widget_add_css_class(gear_btn, "gear-btn");
+    gtk_center_box_set_end_widget(GTK_CENTER_BOX(header), gear_btn);
+    g_signal_connect(gear_btn, "clicked", G_CALLBACK(on_settings_clicked), window);
 
     GtkWidget *notebook = gtk_notebook_new();
     gtk_widget_set_vexpand(notebook, TRUE);
