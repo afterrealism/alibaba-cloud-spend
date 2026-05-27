@@ -1,3 +1,12 @@
 *.o
 alibaba-cloud-spend
 capture_screenshots.py
+
+# CI build artifacts
+deb-build/
+*.deb
+dist/
+installer-output/
+AlibabaCloudSpend.app/
+*.dmg
+*.iconset/
