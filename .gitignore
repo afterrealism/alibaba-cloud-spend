@@ -1,6 +1,7 @@
 *.o
 alibaba-cloud-spend
 capture_screenshots.py
+cap2.py
 
 # Generated assets
 assets/
