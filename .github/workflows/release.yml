@@ -33,6 +33,11 @@ jobs:
             pkg-config \
             build-essential
 
+      - name: Generate assets
+        run: |
+          pip install Pillow
+          python3 ci/generate-assets.py
+
       - name: Build binary
         run: make
 
@@ -75,6 +80,11 @@ jobs:
             mingw-w64-ucrt-x86_64-json-c
             mingw-w64-ucrt-x86_64-openssl
             python
+
+      - name: Generate assets
+        run: |
+          pip install Pillow
+          python ci/generate-assets.py
 
       - name: Build binary
         run: |
@@ -125,6 +135,11 @@ jobs:
       - name: Install dependencies
         run: |
           brew install gtk4 json-c pkg-config create-dmg
+
+      - name: Generate assets
+        run: |
+          pip3 install Pillow
+          python3 ci/generate-assets.py
 
       - name: Build binary
         run: |

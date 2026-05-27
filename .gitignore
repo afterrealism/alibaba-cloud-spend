@@ -2,6 +2,10 @@
 alibaba-cloud-spend
 capture_screenshots.py
 
+# Generated assets
+assets/
+screenshots/
+
 # CI build artifacts
 deb-build/
 *.deb
