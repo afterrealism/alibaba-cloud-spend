@@ -2,7 +2,10 @@
 
 GTK 4 dashboard for monitoring Alibaba Cloud billing — outstanding balances, monthly spend by service, AI/LLM model costs broken down by region, and 6-month historical data. Refreshes automatically every 60 seconds.
 
-![Overview](screenshots/overview.png)
+![Overview](screenshots/tab1-overview.png)
+![AI Beijing](screenshots/tab2-ai-beijing.png)
+![AI Singapore](screenshots/tab3-ai-singapore.png)
+![History](screenshots/tab4-history.png)
 
 ## Features
 
