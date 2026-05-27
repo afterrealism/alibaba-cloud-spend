@@ -35,7 +35,7 @@ jobs:
 
       - name: Generate assets
         run: |
-          pip install Pillow
+          pip install --break-system-packages Pillow
           python3 ci/generate-assets.py
 
       - name: Build binary
@@ -79,11 +79,12 @@ jobs:
             mingw-w64-ucrt-x86_64-curl
             mingw-w64-ucrt-x86_64-json-c
             mingw-w64-ucrt-x86_64-openssl
-            python
+            mingw-w64-ucrt-x86_64-python
+            mingw-w64-ucrt-x86_64-python-pip
+            mingw-w64-ucrt-x86_64-python-pillow
 
       - name: Generate assets
         run: |
-          pip install Pillow
           python ci/generate-assets.py
 
       - name: Build binary
@@ -138,7 +139,7 @@ jobs:
 
       - name: Generate assets
         run: |
-          pip3 install Pillow
+          pip3 install --break-system-packages Pillow
           python3 ci/generate-assets.py
 
       - name: Build binary
