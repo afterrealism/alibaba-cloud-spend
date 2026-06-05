@@ -732,12 +732,36 @@ CouponData fetch_coupons(void) {
     free(url);
     if (!root) return result;
 
+    // Check for API error response
+    struct json_object *code_obj;
+    if (json_object_object_get_ex(root, "Code", &code_obj)) {
+        const char *code = json_object_get_string(code_obj);
+        if (code && strcmp(code, "Success") != 0) {
+            struct json_object *msg_obj;
+            const char *msg = "Unknown error";
+            if (json_object_object_get_ex(root, "Message", &msg_obj))
+                msg = json_object_get_string(msg_obj);
+            snprintf(result.error, sizeof(result.error), "%s: %s", code, msg);
+            result.success = FALSE;
+            json_object_put(root);
+            return result;
+        }
+    }
+
     struct json_object *data_obj, *list_obj;
-    if (!json_object_object_get_ex(root, "Data", &data_obj) ||
-        !json_object_object_get_ex(data_obj, "CashCouponList", &list_obj)) {
+    if (!json_object_object_get_ex(root, "Data", &data_obj)) {
         json_object_put(root);
         result.success = TRUE;
         return result;
+    }
+
+    // Try both field names: CashCoupon (per docs) and CashCouponList
+    if (!json_object_object_get_ex(data_obj, "CashCoupon", &list_obj)) {
+        if (!json_object_object_get_ex(data_obj, "CashCouponList", &list_obj)) {
+            json_object_put(root);
+            result.success = TRUE;
+            return result;
+        }
     }
 
     int len = json_object_array_length(list_obj);
@@ -754,7 +778,9 @@ CouponData fetch_coupons(void) {
 
         if (json_object_object_get_ex(item, "Balance", &balance_obj))
             remaining = json_object_get_double(balance_obj);
-        if (json_object_object_get_ex(item, "CouponAmount", &amount_obj))
+        if (json_object_object_get_ex(item, "NominalValue", &amount_obj))
+            amount = json_object_get_double(amount_obj);
+        else if (json_object_object_get_ex(item, "CouponAmount", &amount_obj))
             amount = json_object_get_double(amount_obj);
 
         if (remaining <= 0.001 && amount <= 0.001)
