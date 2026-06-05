@@ -71,6 +71,8 @@ typedef struct {
     char date[16];
     double cost;
     double tokens;
+    long input_tokens;
+    long output_tokens;
 } DailyUsage;
 
 typedef struct {
@@ -80,6 +82,8 @@ typedef struct {
     int day_count;
     double total_cost;
     double total_tokens;
+    long total_input_tokens;
+    long total_output_tokens;
     gboolean success;
     char error[256];
 } ModelDetailData;
@@ -96,6 +100,7 @@ typedef struct {
     GtkWidget *detail_content;
     gboolean showing_detail;
     char region_filter[64];
+    ModelDetailData detail_data;
 } ModelsCardWidgets;
 
 typedef struct {

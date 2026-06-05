@@ -1,9 +1,9 @@
 CC = gcc
-CFLAGS = $(shell pkg-config --cflags gtk4) $(shell pkg-config --cflags libcurl) $(shell pkg-config --cflags json-c) $(shell pkg-config --cflags openssl 2>/dev/null)
-LIBS = $(shell pkg-config --libs gtk4) $(shell pkg-config --libs libcurl) $(shell pkg-config --libs json-c) $(shell pkg-config --libs openssl 2>/dev/null || echo "-lssl -lcrypto")
+CFLAGS = $(shell pkg-config --cflags gtk4) $(shell pkg-config --cflags libcurl) $(shell pkg-config --cflags json-c) $(shell pkg-config --cflags openssl 2>/dev/null) $(shell pkg-config --cflags sqlite3)
+LIBS = $(shell pkg-config --libs gtk4) $(shell pkg-config --libs libcurl) $(shell pkg-config --libs json-c) $(shell pkg-config --libs openssl 2>/dev/null || echo "-lssl -lcrypto") $(shell pkg-config --libs sqlite3)
 TARGET = alibaba-cloud-spend
 
-SRCS = main.c api.c ui.c
+SRCS = main.c api.c ui.c db.c
 OBJS = $(SRCS:.c=.o)
 
 all: $(TARGET)

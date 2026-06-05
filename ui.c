@@ -638,6 +638,106 @@ static GtkWidget *create_models_card(ModelsCardWidgets *w, const char *region_na
     return w->card_revealer;
 }
 
+static void draw_chart(GtkDrawingArea *area, cairo_t *cr, int width, int height, gpointer user_data) {
+    ModelDetailData *detail = (ModelDetailData *)user_data;
+    
+    if (detail->day_count == 0) return;
+    
+    // Background
+    cairo_set_source_rgb(cr, 0.145, 0.145, 0.145); // CARD_BG
+    cairo_paint(cr);
+    
+    // Find max values for scaling
+    double max_cost = 0;
+    long max_tokens = 0;
+    for (int i = 0; i < detail->day_count; i++) {
+        if (detail->daily[i].cost > max_cost) max_cost = detail->daily[i].cost;
+        long total = detail->daily[i].input_tokens + detail->daily[i].output_tokens;
+        if (total > max_tokens) max_tokens = total;
+    }
+    
+    if (max_cost == 0) max_cost = 1;
+    if (max_tokens == 0) max_tokens = 1;
+    
+    // Chart area
+    int margin_left = 50;
+    int margin_right = 20;
+    int margin_top = 20;
+    int margin_bottom = 40;
+    int chart_width = width - margin_left - margin_right;
+    int chart_height = height - margin_top - margin_bottom;
+    
+    // Grid lines
+    cairo_set_source_rgba(cr, 0.3, 0.3, 0.3, 0.3);
+    cairo_set_line_width(cr, 0.5);
+    for (int i = 0; i <= 4; i++) {
+        int y = margin_top + (chart_height * i / 4);
+        cairo_move_to(cr, margin_left, y);
+        cairo_line_to(cr, width - margin_right, y);
+        cairo_stroke(cr);
+        
+        // Y-axis labels (cost)
+        cairo_set_source_rgb(cr, 0.67, 0.67, 0.67); // TEXT_SECONDARY
+        cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+        cairo_set_font_size(cr, 10);
+        char label[32];
+        snprintf(label, sizeof(label), "$%.2f", max_cost * (4 - i) / 4);
+        cairo_move_to(cr, 5, y + 4);
+        cairo_show_text(cr, label);
+    }
+    
+    // Draw bars
+    int bar_width = chart_width / detail->day_count;
+    int bar_spacing = 2;
+    
+    for (int i = 0; i < detail->day_count; i++) {
+        int x = margin_left + i * bar_width;
+        
+        // Cost bar (orange)
+        double cost_height = (detail->daily[i].cost / max_cost) * chart_height;
+        cairo_set_source_rgb(cr, 1.0, 0.416, 0.0); // ALIBABA_ORANGE
+        cairo_rectangle(cr, x + bar_spacing, margin_top + chart_height - cost_height,
+                       bar_width - bar_spacing * 2, cost_height);
+        cairo_fill(cr);
+        
+        // Token bar (blue, overlaid)
+        long total_tokens = detail->daily[i].input_tokens + detail->daily[i].output_tokens;
+        double token_height = ((double)total_tokens / max_tokens) * chart_height * 0.3; // 30% of chart height
+        cairo_set_source_rgba(cr, 0.2, 0.6, 1.0, 0.6); // Semi-transparent blue
+        cairo_rectangle(cr, x + bar_spacing, margin_top + chart_height - token_height,
+                       bar_width - bar_spacing * 2, token_height);
+        cairo_fill(cr);
+        
+        // X-axis labels (every 5th day)
+        if (i % 5 == 0 || i == detail->day_count - 1) {
+            cairo_set_source_rgb(cr, 0.67, 0.67, 0.67);
+            cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+            cairo_set_font_size(cr, 9);
+            char day_label[16];
+            snprintf(day_label, sizeof(day_label), "%d", i + 1);
+            cairo_move_to(cr, x + bar_width / 2 - 5, height - margin_bottom + 15);
+            cairo_show_text(cr, day_label);
+        }
+    }
+    
+    // Legend
+    cairo_set_source_rgb(cr, 1.0, 0.416, 0.0);
+    cairo_rectangle(cr, width - 150, 10, 12, 12);
+    cairo_fill(cr);
+    cairo_set_source_rgb(cr, 0.67, 0.67, 0.67);
+    cairo_set_font_size(cr, 10);
+    cairo_move_to(cr, width - 130, 20);
+    cairo_show_text(cr, "Cost ($)");
+    
+    cairo_set_source_rgba(cr, 0.2, 0.6, 1.0, 0.6);
+    cairo_rectangle(cr, width - 150, 28, 12, 12);
+    cairo_fill(cr);
+    cairo_set_source_rgb(cr, 0.67, 0.67, 0.67);
+    cairo_move_to(cr, width - 130, 38);
+    cairo_show_text(cr, "Tokens");
+}
+
+
 static void show_model_detail_inline(ModelsCardWidgets *w, const char *model_name) {
     w->showing_detail = TRUE;
     gtk_widget_set_visible(w->models_box, FALSE);
@@ -659,10 +759,11 @@ static void show_model_detail_inline(ModelsCardWidgets *w, const char *model_nam
     gtk_box_append(GTK_BOX(w->detail_content), loading);
 
     ModelDetailData detail = fetch_model_detail(model_name, w->region_filter);
+    w->detail_data = detail;  // Copy to persistent storage
 
     clear_box(w->detail_content);
 
-    if (!detail.success || detail.day_count == 0) {
+    if (!w->detail_data.success || w->detail_data.day_count == 0) {
         GtkWidget *error = gtk_label_new(NULL);
         gtk_label_set_markup(GTK_LABEL(error),
             "<span size='medium' foreground='" DANGER_RED "'>No billing data available</span>");
@@ -670,23 +771,84 @@ static void show_model_detail_inline(ModelsCardWidgets *w, const char *model_nam
         return;
     }
 
+    // Total cost
     char total_markup[256];
     snprintf(total_markup, sizeof(total_markup),
         "<span size='x-large' weight='bold' foreground='" ALIBABA_ACCENT "'>$%.2f</span>\n"
         "<span size='small' foreground='" TEXT_MUTED "'>Total this month</span>",
-        detail.total_cost);
+        w->detail_data.total_cost);
     GtkWidget *total_label = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(total_label), total_markup);
     gtk_widget_set_halign(total_label, GTK_ALIGN_START);
     gtk_box_append(GTK_BOX(w->detail_content), total_label);
 
+    // Token counts
+    char token_markup[512];
+    snprintf(token_markup, sizeof(token_markup),
+        "<span size='medium' foreground='" TEXT_SECONDARY "'>"
+        "Input: <b>%ld</b> tokens · Output: <b>%ld</b> tokens · Total: <b>%ld</b> tokens</span>",
+        w->detail_data.total_input_tokens, w->detail_data.total_output_tokens,
+        w->detail_data.total_input_tokens + w->detail_data.total_output_tokens);
+    GtkWidget *token_label = gtk_label_new(NULL);
+    gtk_label_set_markup(GTK_LABEL(token_label), token_markup);
+    gtk_widget_set_halign(token_label, GTK_ALIGN_START);
+    gtk_box_append(GTK_BOX(w->detail_content), token_label);
+
     GtkWidget *sep = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
     gtk_widget_set_opacity(sep, 0.2);
     gtk_box_append(GTK_BOX(w->detail_content), sep);
 
-    for (int i = 0; i < detail.day_count; i++) {
-        add_row(w->detail_content, detail.daily[i].date, detail.daily[i].cost,
-                TEXT_SECONDARY, ALIBABA_ACCENT);
+    // Chart
+    GtkWidget *chart_label = gtk_label_new(NULL);
+    gtk_label_set_markup(GTK_LABEL(chart_label),
+        "<span size='small' weight='bold' foreground='" ALIBABA_ORANGE "'"
+        " letter_spacing='1024'>USAGE CHART</span>");
+    gtk_widget_set_halign(chart_label, GTK_ALIGN_CENTER);
+    gtk_box_append(GTK_BOX(w->detail_content), chart_label);
+
+    GtkWidget *chart_area = gtk_drawing_area_new();
+    gtk_widget_set_size_request(chart_area, 600, 200);
+    gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA(chart_area), draw_chart, &w->detail_data, NULL);
+    gtk_box_append(GTK_BOX(w->detail_content), chart_area);
+
+    GtkWidget *sep2 = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
+    gtk_widget_set_opacity(sep2, 0.2);
+    gtk_box_append(GTK_BOX(w->detail_content), sep2);
+
+    // Daily breakdown header
+    GtkWidget *daily_header = gtk_label_new(NULL);
+    gtk_label_set_markup(GTK_LABEL(daily_header),
+        "<span size='small' weight='bold' foreground='" ALIBABA_ORANGE "'"
+        " letter_spacing='1024'>DAILY BREAKDOWN</span>");
+    gtk_widget_set_halign(daily_header, GTK_ALIGN_CENTER);
+    gtk_box_append(GTK_BOX(w->detail_content), daily_header);
+
+    for (int i = 0; i < w->detail_data.day_count; i++) {
+        // Create a row with cost and tokens
+        GtkWidget *row = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+        gtk_widget_set_hexpand(row, TRUE);
+
+        char row_markup[512];
+        snprintf(row_markup, sizeof(row_markup),
+            "<span size='small' foreground='" TEXT_SECONDARY "'>%s</span>",
+            w->detail_data.daily[i].date);
+        GtkWidget *name_label = gtk_label_new(NULL);
+        gtk_label_set_markup(GTK_LABEL(name_label), row_markup);
+        gtk_widget_set_halign(name_label, GTK_ALIGN_START);
+        gtk_widget_set_hexpand(name_label, TRUE);
+        gtk_box_append(GTK_BOX(row), name_label);
+
+        char amount_markup[256];
+        snprintf(amount_markup, sizeof(amount_markup),
+            "<span size='small' weight='bold' foreground='" ALIBABA_ACCENT "'>$%.2f</span>"
+            "<span size='x-small' foreground='" TEXT_MUTED "'>  ·  %ld in / %ld out</span>",
+            w->detail_data.daily[i].cost, w->detail_data.daily[i].input_tokens, w->detail_data.daily[i].output_tokens);
+        GtkWidget *amount_label = gtk_label_new(NULL);
+        gtk_label_set_markup(GTK_LABEL(amount_label), amount_markup);
+        gtk_widget_set_halign(amount_label, GTK_ALIGN_END);
+        gtk_box_append(GTK_BOX(row), amount_label);
+
+        gtk_box_append(GTK_BOX(w->detail_content), row);
     }
 }
 

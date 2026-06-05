@@ -1,3 +1,4 @@
+#include "db.h"
 #include "api.h"
 #include "config.h"
 #include <curl/curl.h>
@@ -458,6 +459,8 @@ ModelDetailData fetch_model_detail(const char *model_name, const char *region) {
     result.day_count = 0;
     result.total_cost = 0.0;
     result.total_tokens = 0.0;
+    result.total_input_tokens = 0;
+    result.total_output_tokens = 0;
 
     char *next_token = NULL;
     int page = 0;
@@ -529,14 +532,49 @@ ModelDetailData fetch_model_detail(const char *model_name, const char *region) {
             }
 
             if (part_count >= 3 && strcmp(parts[2], model_name) == 0) {
+                // Parse token counts from InstanceID or Usage field
+                long input_tokens = 0, output_tokens = 0;
+                
+                // Try to extract from parts[4] and parts[5] if they exist (format: ...;input;output)
+                if (part_count >= 6) {
+                    input_tokens = strtol(parts[4], NULL, 10);
+                    output_tokens = strtol(parts[5], NULL, 10);
+                }
+                
+                // Also check for Usage field in JSON
+                struct json_object *usage_obj;
+                if (json_object_object_get_ex(item, "Usage", &usage_obj)) {
+                    const char *usage_str = json_object_get_string(usage_obj);
+                    // Parse usage string if it contains token info
+                    // Format might be "input:123,output:456" or similar
+                    if (usage_str && strstr(usage_str, "input")) {
+                        const char *in_pos = strstr(usage_str, "input:");
+                        if (in_pos) {
+                            input_tokens = strtol(in_pos + 6, NULL, 10);
+                        }
+                    }
+                    if (usage_str && strstr(usage_str, "output")) {
+                        const char *out_pos = strstr(usage_str, "output:");
+                        if (out_pos) {
+                            output_tokens = strtol(out_pos + 7, NULL, 10);
+                        }
+                    }
+                }
+                
                 if (result.day_count < 31) {
                     const char *billing_type = (part_count >= 4) ? parts[3] : "unknown";
                     strncpy(result.daily[result.day_count].date, billing_type,
                             sizeof(result.daily[result.day_count].date) - 1);
                     result.daily[result.day_count].cost = amount;
+                    result.daily[result.day_count].input_tokens = input_tokens;
+                    result.daily[result.day_count].output_tokens = output_tokens;
+                    result.daily[result.day_count].tokens = input_tokens + output_tokens;
                     result.day_count++;
                 }
                 result.total_cost += amount;
+                result.total_input_tokens += input_tokens;
+                result.total_output_tokens += output_tokens;
+                result.total_tokens += input_tokens + output_tokens;
             }
         }
 
@@ -556,6 +594,20 @@ ModelDetailData fetch_model_detail(const char *model_name, const char *region) {
 
     free(next_token);
     result.success = TRUE;
+    // Save to database
+    if (result.success && result.day_count > 0) {
+        if (db_init() == 0) {
+            BillingSnapshot snapshot = {0};
+            snapshot.timestamp = now;
+            strncpy(snapshot.model, model_name, sizeof(snapshot.model) - 1);
+            strncpy(snapshot.region, region, sizeof(snapshot.region) - 1);
+            snapshot.cost = result.total_cost;
+            snapshot.input_tokens = result.total_input_tokens;
+            snapshot.output_tokens = result.total_output_tokens;
+            db_insert_snapshot(&snapshot);
+        }
+    }
+    
     return result;
 }
 
