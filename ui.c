@@ -19,7 +19,6 @@
 
 static BillingCardWidgets billing_card;
 static ServicesCardWidgets services_card;
-static CouponCardWidgets coupons_card;
 static ModelsCardWidgets models_beijing_card;
 static ModelsCardWidgets models_singapore_card;
 static HistoricalCardWidgets historical_card;
@@ -408,142 +407,6 @@ void update_services_card(ServicesCardWidgets *w, DetailedBillingData *bd) {
     gtk_revealer_set_reveal_child(GTK_REVEALER(w->card_revealer), TRUE);
 }
 
-/* ── Coupons card ────────────────────────────────────────────────── */
-
-static void add_coupon_row(GtkWidget *box, const char *name, double remaining,
-                           const char *expiry, double amount) {
-    GtkWidget *row = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    gtk_widget_set_hexpand(row, TRUE);
-
-    GtkWidget *lbl_name = gtk_label_new(NULL);
-    char nm[512];
-    char expiry_short[32];
-    if (expiry && expiry[0]) {
-        strncpy(expiry_short, expiry, 10);
-        expiry_short[10] = '\0';
-    } else {
-        strcpy(expiry_short, "N/A");
-    }
-    snprintf(nm, sizeof(nm),
-             "<span size='small' foreground='" TEXT_SECONDARY "'>%s</span>\n"
-             "<span size='x-small' foreground='" TEXT_MUTED "'>Expires: %s</span>",
-             name, expiry_short);
-    gtk_label_set_markup(GTK_LABEL(lbl_name), nm);
-    gtk_label_set_wrap(GTK_LABEL(lbl_name), TRUE);
-    gtk_widget_set_halign(lbl_name, GTK_ALIGN_START);
-    gtk_widget_set_hexpand(lbl_name, TRUE);
-
-    GtkWidget *lbl_amt = gtk_label_new(NULL);
-    char am[384];
-    if (remaining < amount && remaining > 0.01) {
-        snprintf(am, sizeof(am),
-                 "<span size='small' weight='bold' foreground='" ALIBABA_ACCENT "'>$%.2f</span>\n"
-                 "<span size='x-small' foreground='" TEXT_MUTED "'>of $%.2f</span>",
-                 remaining, amount);
-    } else {
-        snprintf(am, sizeof(am),
-                 "<span size='small' weight='bold' foreground='" ALIBABA_ACCENT "'>$%.2f</span>",
-                 remaining);
-    }
-    gtk_label_set_markup(GTK_LABEL(lbl_amt), am);
-    gtk_widget_set_halign(lbl_amt, GTK_ALIGN_END);
-
-    gtk_box_append(GTK_BOX(row), lbl_name);
-    gtk_box_append(GTK_BOX(row), lbl_amt);
-
-    GtkWidget *sep = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
-    gtk_widget_set_opacity(sep, 0.1);
-
-    gtk_box_append(GTK_BOX(box), sep);
-    gtk_box_append(GTK_BOX(box), row);
-}
-
-static GtkWidget *create_coupons_card(CouponCardWidgets *w) {
-    w->card_revealer = gtk_revealer_new();
-    gtk_revealer_set_transition_type(GTK_REVEALER(w->card_revealer),
-                                     GTK_REVEALER_TRANSITION_TYPE_SLIDE_DOWN);
-    gtk_revealer_set_transition_duration(GTK_REVEALER(w->card_revealer), 400);
-
-    GtkWidget *card = gtk_box_new(GTK_ORIENTATION_VERTICAL, 14);
-    gtk_widget_add_css_class(card, "card");
-    gtk_revealer_set_child(GTK_REVEALER(w->card_revealer), card);
-
-    GtkWidget *title = gtk_label_new(NULL);
-    gtk_label_set_markup(GTK_LABEL(title),
-        "<span size='small' weight='bold' foreground='" ALIBABA_ORANGE "'"
-        " letter_spacing='1024'>AVAILABLE COUPONS</span>");
-    gtk_widget_set_halign(title, GTK_ALIGN_CENTER);
-    gtk_box_append(GTK_BOX(card), title);
-
-    w->total_label = gtk_label_new(NULL);
-    gtk_label_set_markup(GTK_LABEL(w->total_label),
-        "<span size='xx-large' weight='bold' foreground='" TEXT_PRIMARY "'>--</span>\n"
-        "<span size='small' foreground='" TEXT_MUTED "'>USD · available balance</span>");
-    gtk_widget_set_halign(w->total_label, GTK_ALIGN_CENTER);
-    gtk_box_append(GTK_BOX(card), w->total_label);
-
-    w->cash_label = gtk_label_new(NULL);
-    gtk_label_set_markup(GTK_LABEL(w->cash_label),
-        "<span size='small' foreground='" TEXT_MUTED "'>Cash available: --</span>");
-    gtk_widget_set_halign(w->cash_label, GTK_ALIGN_CENTER);
-    gtk_box_append(GTK_BOX(card), w->cash_label);
-
-    GtkWidget *sep = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
-    gtk_widget_set_opacity(sep, 0.2);
-    gtk_box_append(GTK_BOX(card), sep);
-
-    w->coupons_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 6);
-    gtk_box_append(GTK_BOX(card), w->coupons_box);
-
-    w->last_updated_label = gtk_label_new(NULL);
-    gtk_widget_set_halign(w->last_updated_label, GTK_ALIGN_CENTER);
-    gtk_box_append(GTK_BOX(card), w->last_updated_label);
-
-    return w->card_revealer;
-}
-
-void update_coupons_card(CouponCardWidgets *w, CouponData *cd) {
-    gtk_spinner_stop(GTK_SPINNER(w->spinner));
-    gtk_widget_set_visible(w->spinner, FALSE);
-
-    if (!cd->success) {
-        char markup[512];
-        snprintf(markup, sizeof(markup),
-                 "<span size='large' weight='bold' foreground='" DANGER_RED "'>Error</span>\n"
-                 "<span size='small' foreground='" TEXT_MUTED "'>%s</span>", cd->error);
-        gtk_label_set_markup(GTK_LABEL(w->total_label), markup);
-    } else if (cd->count == 0) {
-        gtk_label_set_markup(GTK_LABEL(w->total_label),
-            "<span size='x-large' weight='bold' foreground='" TEXT_MUTED "'>No coupons</span>\n"
-            "<span size='small' foreground='" TEXT_MUTED "'>No active coupons available</span>");
-        gtk_label_set_markup(GTK_LABEL(w->cash_label),
-            "<span size='small' foreground='" TEXT_MUTED "'>Cash available: $0.00</span>");
-        clear_box(w->coupons_box);
-    } else {
-        char markup[320];
-        snprintf(markup, sizeof(markup),
-                 "<span size='xx-large' weight='bold' foreground='" SUCCESS_GREEN "'>$%.2f</span>\n"
-                 "<span size='small' foreground='" TEXT_MUTED "'>USD · available balance</span>",
-                 cd->total_remaining);
-        gtk_label_set_markup(GTK_LABEL(w->total_label), markup);
-
-        char cash_markup[320];
-        snprintf(cash_markup, sizeof(cash_markup),
-                 "<span size='small' foreground='" TEXT_MUTED "'>Cash available: "
-                 "<span weight='bold' foreground='" SUCCESS_GREEN "'>$%.2f</span></span>",
-                 cd->total_amount);
-        gtk_label_set_markup(GTK_LABEL(w->cash_label), cash_markup);
-
-        clear_box(w->coupons_box);
-        for (int i = 0; i < cd->count; i++) {
-            add_coupon_row(w->coupons_box, cd->items[i].name, cd->items[i].remaining,
-                           cd->items[i].expiry, cd->items[i].amount);
-        }
-    }
-
-    set_timestamp(w->last_updated_label);
-    gtk_revealer_set_reveal_child(GTK_REVEALER(w->card_revealer), TRUE);
-}
 
 /* ── AI Models card ──────────────────────────────────────────────── */
 
@@ -1024,7 +887,6 @@ static void on_model_row_clicked(GtkGestureClick *gesture, int n_press, double x
 static gboolean on_timer(gpointer user_data) {
     (void)user_data;
     start_fetch(&billing_card);
-    start_coupons_fetch(&coupons_card);
     start_detailed_fetch(&services_card, &models_beijing_card, &models_singapore_card);
     start_historical_fetch(&historical_card);
     return G_SOURCE_CONTINUE;
@@ -1193,16 +1055,11 @@ void build_ui(GtkApplication *app) {
     gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(tab1_scroll), tab1_box);
 
     gtk_box_append(GTK_BOX(tab1_box), create_billing_card(&billing_card));
-    gtk_box_append(GTK_BOX(tab1_box), create_coupons_card(&coupons_card));
     gtk_box_append(GTK_BOX(tab1_box), create_services_card(&services_card));
 
     billing_card.spinner = gtk_spinner_new();
     gtk_widget_set_halign(billing_card.spinner, GTK_ALIGN_CENTER);
     gtk_widget_set_size_request(billing_card.spinner, 32, 32);
-    coupons_card.spinner = gtk_spinner_new();
-    gtk_widget_set_halign(coupons_card.spinner, GTK_ALIGN_CENTER);
-    gtk_widget_set_size_request(coupons_card.spinner, 32, 32);
-    services_card.spinner = gtk_spinner_new();
     gtk_widget_set_halign(services_card.spinner, GTK_ALIGN_CENTER);
     gtk_widget_set_size_request(services_card.spinner, 32, 32);
 
@@ -1275,7 +1132,6 @@ void build_ui(GtkApplication *app) {
     gtk_window_present(GTK_WINDOW(window));
 
     start_fetch(&billing_card);
-    start_coupons_fetch(&coupons_card);
     start_detailed_fetch(&services_card, &models_beijing_card, &models_singapore_card);
     start_historical_fetch(&historical_card);
     g_timeout_add_seconds(UPDATE_INTERVAL_S, on_timer, NULL);

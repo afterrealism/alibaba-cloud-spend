@@ -110,32 +110,5 @@ typedef struct {
     GtkWidget *card_revealer;
 } HistoricalCardWidgets;
 
-typedef struct {
-    char name[256];
-    char coupon_no[64];
-    char type[64];
-    char status[32];
-    double amount;
-    double remaining;
-    char expiry[64];
-} CouponItem;
-
-typedef struct {
-    CouponItem items[MAX_ITEMS];
-    int count;
-    double total_remaining;
-    double total_amount;
-    gboolean success;
-    char error[256];
-} CouponData;
-
-typedef struct {
-    GtkWidget *total_label;
-    GtkWidget *cash_label;
-    GtkWidget *coupons_box;
-    GtkWidget *last_updated_label;
-    GtkWidget *spinner;
-    GtkWidget *card_revealer;
-} CouponCardWidgets;
 
 #endif
