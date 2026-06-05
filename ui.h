@@ -8,6 +8,7 @@ void update_billing_card(BillingCardWidgets *w, BillingData *bd);
 void update_services_card(ServicesCardWidgets *w, DetailedBillingData *bd);
 void update_models_card(ModelsCardWidgets *w, DetailedBillingData *bd);
 void update_historical_card(HistoricalCardWidgets *w, HistoricalBillingData *bd);
+void update_coupons_card(CouponCardWidgets *w, CouponData *cd);
 void build_ui(GtkApplication *app);
 
 #endif

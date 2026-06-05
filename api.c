@@ -222,13 +222,13 @@ BillingData fetch_billing(void) {
 
     for (int i = 0; i < len && result.count < MAX_ITEMS; i++) {
         struct json_object *item = json_object_array_get_idx(item_arr, i);
-        struct json_object *outstanding_obj, *name_obj;
+        struct json_object *amount_obj, *name_obj;
 
-        if (!json_object_object_get_ex(item, "OutstandingAmount", &outstanding_obj))
+        if (!json_object_object_get_ex(item, "PretaxAmount", &amount_obj))
             continue;
 
-        double outstanding = json_object_get_double(outstanding_obj);
-        if (outstanding <= 0.001)
+        double amount = json_object_get_double(amount_obj);
+        if (amount <= 0.001)
             continue;
 
         const char *name = "Unknown";
@@ -237,8 +237,8 @@ BillingData fetch_billing(void) {
 
         strncpy(result.items[result.count].product, name,
                 sizeof(result.items[result.count].product) - 1);
-        result.items[result.count].amount = outstanding;
-        result.total += outstanding;
+        result.items[result.count].amount = amount;
+        result.total += amount;
         result.count++;
     }
 
@@ -668,4 +668,98 @@ void start_historical_fetch(HistoricalCardWidgets *hw) {
     gtk_widget_set_visible(hw->spinner, TRUE);
     gtk_spinner_start(GTK_SPINNER(hw->spinner));
     g_thread_new("historical-billing-fetch", historical_fetch_thread_fn, hw);
+}
+
+/* ── Coupon fetch ────────────────────────────────────────────────── */
+
+CouponData fetch_coupons(void) {
+    CouponData result = {0};
+
+    char *url = build_signed_url("QueryCashCoupons", NULL, NULL, 0);
+    struct json_object *root = do_http_get(url, result.error, sizeof(result.error));
+    free(url);
+    if (!root) return result;
+
+    struct json_object *data_obj, *list_obj;
+    if (!json_object_object_get_ex(root, "Data", &data_obj) ||
+        !json_object_object_get_ex(data_obj, "CashCouponList", &list_obj)) {
+        json_object_put(root);
+        result.success = TRUE;
+        return result;
+    }
+
+    int len = json_object_array_length(list_obj);
+    result.count = 0;
+    result.total_remaining = 0.0;
+    result.total_amount = 0.0;
+
+    for (int i = 0; i < len && result.count < MAX_ITEMS; i++) {
+        struct json_object *item = json_object_array_get_idx(list_obj, i);
+        struct json_object *name_obj, *balance_obj, *amount_obj, *expiry_obj, *status_obj, *no_obj;
+
+        double remaining = 0.0;
+        double amount = 0.0;
+
+        if (json_object_object_get_ex(item, "Balance", &balance_obj))
+            remaining = json_object_get_double(balance_obj);
+        if (json_object_object_get_ex(item, "CouponAmount", &amount_obj))
+            amount = json_object_get_double(amount_obj);
+
+        if (remaining <= 0.001 && amount <= 0.001)
+            continue;
+
+        const char *name = "Coupon";
+        if (json_object_object_get_ex(item, "Description", &name_obj))
+            name = json_object_get_string(name_obj);
+
+        strncpy(result.items[result.count].name, name,
+                sizeof(result.items[result.count].name) - 1);
+        if (json_object_object_get_ex(item, "CashCouponNo", &no_obj))
+            strncpy(result.items[result.count].coupon_no, json_object_get_string(no_obj),
+                    sizeof(result.items[result.count].coupon_no) - 1);
+        if (json_object_object_get_ex(item, "Status", &status_obj))
+            strncpy(result.items[result.count].status, json_object_get_string(status_obj),
+                    sizeof(result.items[result.count].status) - 1);
+        if (json_object_object_get_ex(item, "ExpiryTime", &expiry_obj))
+            strncpy(result.items[result.count].expiry, json_object_get_string(expiry_obj),
+                    sizeof(result.items[result.count].expiry) - 1);
+
+        result.items[result.count].remaining = remaining;
+        result.items[result.count].amount = amount;
+        result.total_remaining += remaining;
+        result.total_amount += amount;
+        result.count++;
+    }
+
+    result.success = TRUE;
+    json_object_put(root);
+    return result;
+}
+
+typedef struct {
+    CouponCardWidgets *widgets;
+    CouponData data;
+} CouponFetchResult;
+
+static gboolean update_coupons_ui_dispatch(gpointer user_data) {
+    CouponFetchResult *fr = (CouponFetchResult *)user_data;
+    extern void update_coupons_card(CouponCardWidgets *w, CouponData *cd);
+    update_coupons_card(fr->widgets, &fr->data);
+    g_free(fr);
+    return G_SOURCE_REMOVE;
+}
+
+static gpointer coupon_fetch_thread_fn(gpointer user_data) {
+    CouponCardWidgets *w = (CouponCardWidgets *)user_data;
+    CouponFetchResult *fr = g_malloc(sizeof(CouponFetchResult));
+    fr->widgets = w;
+    fr->data = fetch_coupons();
+    g_idle_add(update_coupons_ui_dispatch, fr);
+    return NULL;
+}
+
+void start_coupons_fetch(CouponCardWidgets *w) {
+    gtk_widget_set_visible(w->spinner, TRUE);
+    gtk_spinner_start(GTK_SPINNER(w->spinner));
+    g_thread_new("coupons-fetch", coupon_fetch_thread_fn, w);
 }
