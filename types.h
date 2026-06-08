@@ -4,6 +4,11 @@
 #include <gtk/gtk.h>
 #include "config.h"
 
+// Forward declarations for proxy types
+typedef struct ProxyModelRow ProxyModelRow;
+typedef struct ProxyDailyRow ProxyDailyRow;
+
+
 typedef struct {
     char product[128];
     double amount;
@@ -109,6 +114,37 @@ typedef struct {
     GtkWidget *spinner;
     GtkWidget *card_revealer;
 } HistoricalCardWidgets;
+
+typedef struct {
+    GtkWidget *status_dot;
+    GtkWidget *status_text;
+    GtkWidget *uptime_label;
+    GtkWidget *rps_label;
+    GtkWidget *summary_total_cost;
+    GtkWidget *summary_requests;
+    GtkWidget *summary_cache_hit;
+    GtkWidget *summary_tokens;
+    GtkWidget *chart_doughnut;
+    GtkWidget *chart_cache_line;
+    GtkWidget *chart_daily_bar;
+    GtkWidget *today_box;
+    GtkWidget *monthly_box;
+    GtkWidget *recent_box;
+    GtkWidget *load_more_btn;
+    int recent_limit;
+    GtkWidget *open_dashboard_btn;
+    GtkWidget *show_log_btn;
+    GtkWidget *last_updated_label;
+    GtkWidget *spinner;
+    GtkWidget *card_revealer;
+    ProxyModelRow *chart_models;
+    int chart_models_count;
+    ProxyDailyRow *chart_daily;
+    int chart_daily_count;
+    GtkWidget *detail_box;
+    GtkWidget *detail_content;
+    gboolean showing_detail;
+} ProxyCardWidgets;
 
 
 #endif

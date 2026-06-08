@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Alibaba Cloud Spend Tracker
+Comment=Track Alibaba Cloud spending with built-in DashScope proxy
+Exec=/home/sheece/Desktop/work/experimenting/alibaba-cloud-spend/alibaba-cloud-spend
+Icon=utilities-system-monitor
+Terminal=false
+Categories=Development;Utility;
+StartupNotify=true

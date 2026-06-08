@@ -2,6 +2,7 @@
 #include <curl/curl.h>
 #include "ui.h"
 #include "config.h"
+#include "proxy.h"
 
 static void activate(GtkApplication *app, gpointer user_data) {
     (void)user_data;
@@ -11,6 +12,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
 int main(int argc, char **argv) {
     curl_global_init(CURL_GLOBAL_DEFAULT);
     load_credentials();
+    proxy_init();
 
     GtkApplication *app = gtk_application_new("com.example.alicloudspend",
                                               G_APPLICATION_DEFAULT_FLAGS);
@@ -18,6 +20,7 @@ int main(int argc, char **argv) {
     int status = g_application_run(G_APPLICATION(app), argc, argv);
     g_object_unref(app);
 
+    proxy_shutdown();
     curl_global_cleanup();
     return status;
 }

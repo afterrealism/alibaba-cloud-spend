@@ -72,7 +72,7 @@ void apply_css(void) {
         "  border-radius: 6px;"
         "}"
         ".gear-btn label {"
-        "  font-size: 26px;"
+        "  font-size: 22px;"
         "  color: " TEXT_SECONDARY ";"
         "}"
         ".settings-window {"
@@ -116,7 +116,7 @@ void apply_css(void) {
         "  background-color: #444444;"
         "}"
         ".proxy-status-dot {"
-        "  font-size: 26px;"
+        "  font-size: 24px;"
         "}"
         ".proxy-status-dot.running {"
         "  color: " SUCCESS_GREEN ";"
@@ -132,12 +132,12 @@ void apply_css(void) {
         "  min-width: 140px;"
         "}"
         ".proxy-summary-value {"
-        "  font-size: 26px;"
+        "  font-size: 24px;"
         "  font-weight: bold;"
         "  color: " TEXT_PRIMARY ";"
         "}"
         ".proxy-summary-label {"
-        "  font-size: 16px;"
+        "  font-size: 12px;"
         "  color: " TEXT_SECONDARY ";"
         "  margin-top: 4px;"
         "}"
@@ -149,7 +149,7 @@ void apply_css(void) {
         "  border-radius: 8px;"
         "  padding: 6px 16px;"
         "  font-weight: bold;"
-        "  font-size: 16px;"
+        "  font-size: 14px;"
         "  box-shadow: none;"
         "}"
         ".back-btn:hover {"
@@ -199,7 +199,7 @@ static void set_timestamp(GtkWidget *label) {
     strftime(timebuf, sizeof(timebuf), "%H:%M:%S", lt);
     char markup[128];
     snprintf(markup, sizeof(markup),
-             "<span size='small' foreground='" TEXT_MUTED "'>Last updated: %s</span>", timebuf);
+             "<span size='x-small' foreground='" TEXT_MUTED "'>Last updated: %s</span>", timebuf);
     gtk_label_set_markup(GTK_LABEL(label), markup);
 }
 
@@ -211,7 +211,7 @@ static void add_row(GtkWidget *box, const char *name, double amount,
     GtkWidget *lbl_name = gtk_label_new(NULL);
     char nm[384];
     snprintf(nm, sizeof(nm),
-             "<span size='medium' foreground='%s'>%s</span>", name_color, name);
+             "<span size='small' foreground='%s'>%s</span>", name_color, name);
     gtk_label_set_markup(GTK_LABEL(lbl_name), nm);
     gtk_label_set_wrap(GTK_LABEL(lbl_name), TRUE);
     gtk_widget_set_halign(lbl_name, GTK_ALIGN_START);
@@ -220,7 +220,7 @@ static void add_row(GtkWidget *box, const char *name, double amount,
     GtkWidget *lbl_amt = gtk_label_new(NULL);
     char am[256];
     snprintf(am, sizeof(am),
-             "<span size='medium' weight='bold' foreground='%s'>$%.2f</span>", amt_color, amount);
+             "<span size='small' weight='bold' foreground='%s'>$%.2f</span>", amt_color, amount);
     gtk_label_set_markup(GTK_LABEL(lbl_amt), am);
     gtk_widget_set_halign(lbl_amt, GTK_ALIGN_END);
 
@@ -266,9 +266,9 @@ static void add_clickable_model_row(GtkWidget *box, ModelsCardWidgets *w, const 
     GtkWidget *lbl_name = gtk_label_new(NULL);
     char nm[384];
     snprintf(nm, sizeof(nm),
-             "<span size='medium' foreground='" TEXT_SECONDARY "'>%s  </span>"
-             "<span size='small' foreground='" TEXT_MUTED "'>(%.0f%%)</span>"
-             "<span size='small' foreground='" ALIBABA_ORANGE "'> ▶</span>",
+             "<span size='small' foreground='" TEXT_SECONDARY "'>%s  </span>"
+             "<span size='x-small' foreground='" TEXT_MUTED "'>(%.0f%%)</span>"
+             "<span size='x-small' foreground='" ALIBABA_ORANGE "'> ▶</span>",
              model_name, pct);
     gtk_label_set_markup(GTK_LABEL(lbl_name), nm);
     gtk_label_set_wrap(GTK_LABEL(lbl_name), TRUE);
@@ -278,7 +278,7 @@ static void add_clickable_model_row(GtkWidget *box, ModelsCardWidgets *w, const 
     GtkWidget *lbl_amt = gtk_label_new(NULL);
     char am[256];
     snprintf(am, sizeof(am),
-             "<span size='medium' weight='bold' foreground='" ALIBABA_ACCENT "'>$%.2f</span>", amount);
+             "<span size='small' weight='bold' foreground='" ALIBABA_ACCENT "'>$%.2f</span>", amount);
     gtk_label_set_markup(GTK_LABEL(lbl_amt), am);
     gtk_widget_set_halign(lbl_amt, GTK_ALIGN_END);
 
@@ -325,7 +325,7 @@ static GtkWidget *create_billing_card(BillingCardWidgets *w) {
 
     GtkWidget *title = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(title),
-        "<span size='medium' weight='bold' foreground='" ALIBABA_ORANGE "'"
+        "<span size='small' weight='bold' foreground='" ALIBABA_ORANGE "'"
         " letter_spacing='1024'>OUTSTANDING BALANCE</span>");
     gtk_widget_set_halign(title, GTK_ALIGN_CENTER);
     gtk_box_append(GTK_BOX(card), title);
@@ -333,7 +333,7 @@ static GtkWidget *create_billing_card(BillingCardWidgets *w) {
     w->total_label = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(w->total_label),
         "<span size='xx-large' weight='bold' foreground='" TEXT_PRIMARY "'>--</span>\n"
-        "<span size='medium' foreground='" TEXT_MUTED "'>USD</span>");
+        "<span size='small' foreground='" TEXT_MUTED "'>USD</span>");
     gtk_widget_set_halign(w->total_label, GTK_ALIGN_CENTER);
     gtk_box_append(GTK_BOX(card), w->total_label);
 
@@ -358,20 +358,20 @@ void update_billing_card(BillingCardWidgets *w, BillingData *bd) {
     if (!bd->success) {
         char markup[512];
         snprintf(markup, sizeof(markup),
-                 "<span size='x-large' weight='bold' foreground='" DANGER_RED "'>Error</span>\n"
-                 "<span size='medium' foreground='" TEXT_MUTED "'>%s</span>", bd->error);
+                 "<span size='large' weight='bold' foreground='" DANGER_RED "'>Error</span>\n"
+                 "<span size='small' foreground='" TEXT_MUTED "'>%s</span>", bd->error);
         gtk_label_set_markup(GTK_LABEL(w->total_label), markup);
     } else {
         char markup[320];
         if (bd->total > 0.0) {
             snprintf(markup, sizeof(markup),
                      "<span size='xx-large' weight='bold' foreground='" DANGER_RED "'>$%.2f</span>\n"
-                     "<span size='medium' foreground='" TEXT_MUTED "'>USD</span>",
+                     "<span size='small' foreground='" TEXT_MUTED "'>USD</span>",
                      bd->total);
         } else {
             snprintf(markup, sizeof(markup),
                      "<span size='xx-large' weight='bold' foreground='" SUCCESS_GREEN "'>$0.00</span>\n"
-                     "<span size='medium' foreground='" TEXT_MUTED "'>USD · All paid</span>");
+                     "<span size='small' foreground='" TEXT_MUTED "'>USD · All paid</span>");
         }
         gtk_label_set_markup(GTK_LABEL(w->total_label), markup);
 
@@ -400,7 +400,7 @@ static GtkWidget *create_services_card(ServicesCardWidgets *w) {
 
     GtkWidget *title = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(title),
-        "<span size='medium' weight='bold' foreground='" ALIBABA_ORANGE "'"
+        "<span size='small' weight='bold' foreground='" ALIBABA_ORANGE "'"
         " letter_spacing='1024'>MONTHLY SPEND BY SERVICE</span>");
     gtk_widget_set_halign(title, GTK_ALIGN_CENTER);
     gtk_box_append(GTK_BOX(card), title);
@@ -408,7 +408,7 @@ static GtkWidget *create_services_card(ServicesCardWidgets *w) {
     w->total_label = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(w->total_label),
         "<span size='xx-large' weight='bold' foreground='" TEXT_PRIMARY "'>--</span>\n"
-        "<span size='medium' foreground='" TEXT_MUTED "'>USD · this month</span>");
+        "<span size='small' foreground='" TEXT_MUTED "'>USD · this month</span>");
     gtk_widget_set_halign(w->total_label, GTK_ALIGN_CENTER);
     gtk_box_append(GTK_BOX(card), w->total_label);
 
@@ -433,14 +433,14 @@ void update_services_card(ServicesCardWidgets *w, DetailedBillingData *bd) {
     if (!bd->success) {
         char markup[512];
         snprintf(markup, sizeof(markup),
-                 "<span size='x-large' weight='bold' foreground='" DANGER_RED "'>Error</span>\n"
-                 "<span size='medium' foreground='" TEXT_MUTED "'>%s</span>", bd->error);
+                 "<span size='large' weight='bold' foreground='" DANGER_RED "'>Error</span>\n"
+                 "<span size='small' foreground='" TEXT_MUTED "'>%s</span>", bd->error);
         gtk_label_set_markup(GTK_LABEL(w->total_label), markup);
     } else {
         char markup[320];
         snprintf(markup, sizeof(markup),
                  "<span size='xx-large' weight='bold' foreground='" ALIBABA_ACCENT "'>$%.2f</span>\n"
-                 "<span size='medium' foreground='" TEXT_MUTED "'>USD · this month</span>",
+                 "<span size='small' foreground='" TEXT_MUTED "'>USD · this month</span>",
                  bd->total_spend);
         gtk_label_set_markup(GTK_LABEL(w->total_label), markup);
 
@@ -453,7 +453,7 @@ void update_services_card(ServicesCardWidgets *w, DetailedBillingData *bd) {
         for (int i = 0; i < bd->service_count; i++) {
             double pct = (bd->total_spend > 0) ? (sorted[i].amount / bd->total_spend * 100.0) : 0;
             char label[384];
-            snprintf(label, sizeof(label), "%s  <span size='small' foreground='" TEXT_MUTED "'>(%.0f%%)</span>",
+            snprintf(label, sizeof(label), "%s  <span size='x-small' foreground='" TEXT_MUTED "'>(%.0f%%)</span>",
                      sorted[i].name, pct);
             add_row(w->services_box, label, sorted[i].amount,
                     TEXT_SECONDARY, ALIBABA_ACCENT);
@@ -473,13 +473,13 @@ static void hide_model_detail(ModelsCardWidgets *w);
 static void on_back_hover(GtkEventControllerMotion *controller, double x, double y, gpointer user_data) {
     GtkLabel *label = GTK_LABEL(user_data);
     gtk_label_set_markup(label,
-        "<span size='medium' weight='bold' foreground='" ALIBABA_ORANGE "'>← Back to Models</span>");
+        "<span size='small' weight='bold' foreground='" ALIBABA_ORANGE "'>← Back to Models</span>");
 }
 
 static void on_back_unhover(GtkEventControllerMotion *controller, gpointer user_data) {
     GtkLabel *label = GTK_LABEL(user_data);
     gtk_label_set_markup(label,
-        "<span size='medium' weight='bold' foreground='" TEXT_SECONDARY "'>← Back to Models</span>");
+        "<span size='small' weight='bold' foreground='" TEXT_SECONDARY "'>← Back to Models</span>");
 }
 
 static void on_back_button_clicked(GtkGestureClick *gesture, int n_press, double x, double y, gpointer user_data) {
@@ -502,7 +502,7 @@ static GtkWidget *create_models_card(ModelsCardWidgets *w, const char *region_na
 
     char title_markup[256];
     snprintf(title_markup, sizeof(title_markup),
-        "<span size='medium' weight='bold' foreground='" ALIBABA_ORANGE "'"
+        "<span size='small' weight='bold' foreground='" ALIBABA_ORANGE "'"
         " letter_spacing='1024'>AI MODELS · %s</span>", region_name);
     GtkWidget *title = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(title), title_markup);
@@ -512,7 +512,7 @@ static GtkWidget *create_models_card(ModelsCardWidgets *w, const char *region_na
     w->total_label = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(w->total_label),
         "<span size='xx-large' weight='bold' foreground='" TEXT_PRIMARY "'>--</span>\n"
-        "<span size='medium' foreground='" TEXT_MUTED "'>USD · LLM inference</span>");
+        "<span size='small' foreground='" TEXT_MUTED "'>USD · LLM inference</span>");
     gtk_widget_set_halign(w->total_label, GTK_ALIGN_CENTER);
     gtk_box_append(GTK_BOX(card), w->total_label);
 
@@ -533,7 +533,7 @@ static GtkWidget *create_models_card(ModelsCardWidgets *w, const char *region_na
 
     w->back_button = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(w->back_button),
-        "<span size='medium' weight='bold' foreground='" TEXT_SECONDARY "'>← Back to Models</span>");
+        "<span size='small' weight='bold' foreground='" TEXT_SECONDARY "'>← Back to Models</span>");
     gtk_widget_set_halign(w->back_button, GTK_ALIGN_START);
     gtk_widget_set_cursor_from_name(w->back_button, "pointer");
     
@@ -599,7 +599,7 @@ static void draw_chart(GtkDrawingArea *area, cairo_t *cr, int width, int height,
         // Y-axis labels (cost)
         cairo_set_source_rgb(cr, 0.67, 0.67, 0.67); // TEXT_SECONDARY
         cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-        cairo_set_font_size(cr, 14);
+        cairo_set_font_size(cr, 10);
         char label[32];
         snprintf(label, sizeof(label), "$%.2f", max_cost * (4 - i) / 4);
         cairo_move_to(cr, 5, y + 4);
@@ -632,7 +632,7 @@ static void draw_chart(GtkDrawingArea *area, cairo_t *cr, int width, int height,
         if (i % 5 == 0 || i == detail->day_count - 1) {
             cairo_set_source_rgb(cr, 0.67, 0.67, 0.67);
             cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-            cairo_set_font_size(cr, 11);
+            cairo_set_font_size(cr, 9);
             char day_label[16];
             snprintf(day_label, sizeof(day_label), "%d", i + 1);
             cairo_move_to(cr, x + bar_width / 2 - 5, height - margin_bottom + 15);
@@ -645,7 +645,7 @@ static void draw_chart(GtkDrawingArea *area, cairo_t *cr, int width, int height,
     cairo_rectangle(cr, width - 150, 10, 12, 12);
     cairo_fill(cr);
     cairo_set_source_rgb(cr, 0.67, 0.67, 0.67);
-    cairo_set_font_size(cr, 14);
+    cairo_set_font_size(cr, 10);
     cairo_move_to(cr, width - 130, 20);
     cairo_show_text(cr, "Cost ($)");
     
@@ -666,8 +666,8 @@ static void show_model_detail_inline(ModelsCardWidgets *w, const char *model_nam
 
     char title_markup[512];
     snprintf(title_markup, sizeof(title_markup),
-        "<span size='x-large' weight='bold' foreground='" ALIBABA_ACCENT "'>%s</span>\n"
-        "<span size='medium' foreground='" TEXT_MUTED "'>%s · Billing Breakdown</span>",
+        "<span size='large' weight='bold' foreground='" ALIBABA_ACCENT "'>%s</span>\n"
+        "<span size='small' foreground='" TEXT_MUTED "'>%s · Billing Breakdown</span>",
         model_name, w->region_filter);
     gtk_label_set_markup(GTK_LABEL(w->detail_title), title_markup);
 
@@ -675,7 +675,7 @@ static void show_model_detail_inline(ModelsCardWidgets *w, const char *model_nam
 
     GtkWidget *loading = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(loading),
-        "<span size='large' foreground='" TEXT_MUTED "'>Loading...</span>");
+        "<span size='medium' foreground='" TEXT_MUTED "'>Loading...</span>");
     gtk_box_append(GTK_BOX(w->detail_content), loading);
 
     ModelDetailData detail = fetch_model_detail(model_name, w->region_filter);
@@ -686,7 +686,7 @@ static void show_model_detail_inline(ModelsCardWidgets *w, const char *model_nam
     if (!w->detail_data.success || w->detail_data.day_count == 0) {
         GtkWidget *error = gtk_label_new(NULL);
         gtk_label_set_markup(GTK_LABEL(error),
-            "<span size='large' foreground='" DANGER_RED "'>No billing data available</span>");
+            "<span size='medium' foreground='" DANGER_RED "'>No billing data available</span>");
         gtk_box_append(GTK_BOX(w->detail_content), error);
         return;
     }
@@ -694,8 +694,8 @@ static void show_model_detail_inline(ModelsCardWidgets *w, const char *model_nam
     // Total cost
     char total_markup[256];
     snprintf(total_markup, sizeof(total_markup),
-        "<span size='xx-large' weight='bold' foreground='" ALIBABA_ACCENT "'>$%.2f</span>\n"
-        "<span size='medium' foreground='" TEXT_MUTED "'>Total this month</span>",
+        "<span size='x-large' weight='bold' foreground='" ALIBABA_ACCENT "'>$%.2f</span>\n"
+        "<span size='small' foreground='" TEXT_MUTED "'>Total this month</span>",
         w->detail_data.total_cost);
     GtkWidget *total_label = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(total_label), total_markup);
@@ -705,7 +705,7 @@ static void show_model_detail_inline(ModelsCardWidgets *w, const char *model_nam
     // Token counts
     char token_markup[512];
     snprintf(token_markup, sizeof(token_markup),
-        "<span size='large' foreground='" TEXT_SECONDARY "'>"
+        "<span size='medium' foreground='" TEXT_SECONDARY "'>"
         "Input: <b>%ld</b> tokens · Output: <b>%ld</b> tokens · Total: <b>%ld</b> tokens</span>",
         w->detail_data.total_input_tokens, w->detail_data.total_output_tokens,
         w->detail_data.total_input_tokens + w->detail_data.total_output_tokens);
@@ -721,7 +721,7 @@ static void show_model_detail_inline(ModelsCardWidgets *w, const char *model_nam
     // Chart
     GtkWidget *chart_label = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(chart_label),
-        "<span size='medium' weight='bold' foreground='" ALIBABA_ORANGE "'"
+        "<span size='small' weight='bold' foreground='" ALIBABA_ORANGE "'"
         " letter_spacing='1024'>USAGE CHART</span>");
     gtk_widget_set_halign(chart_label, GTK_ALIGN_CENTER);
     gtk_box_append(GTK_BOX(w->detail_content), chart_label);
@@ -738,7 +738,7 @@ static void show_model_detail_inline(ModelsCardWidgets *w, const char *model_nam
     // Daily breakdown header
     GtkWidget *daily_header = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(daily_header),
-        "<span size='medium' weight='bold' foreground='" ALIBABA_ORANGE "'"
+        "<span size='small' weight='bold' foreground='" ALIBABA_ORANGE "'"
         " letter_spacing='1024'>DAILY BREAKDOWN</span>");
     gtk_widget_set_halign(daily_header, GTK_ALIGN_CENTER);
     gtk_box_append(GTK_BOX(w->detail_content), daily_header);
@@ -750,7 +750,7 @@ static void show_model_detail_inline(ModelsCardWidgets *w, const char *model_nam
 
         char row_markup[512];
         snprintf(row_markup, sizeof(row_markup),
-            "<span size='medium' foreground='" TEXT_SECONDARY "'>%s</span>",
+            "<span size='small' foreground='" TEXT_SECONDARY "'>%s</span>",
             w->detail_data.daily[i].date);
         GtkWidget *name_label = gtk_label_new(NULL);
         gtk_label_set_markup(GTK_LABEL(name_label), row_markup);
@@ -760,8 +760,8 @@ static void show_model_detail_inline(ModelsCardWidgets *w, const char *model_nam
 
         char amount_markup[256];
         snprintf(amount_markup, sizeof(amount_markup),
-            "<span size='medium' weight='bold' foreground='" ALIBABA_ACCENT "'>$%.2f</span>"
-            "<span size='small' foreground='" TEXT_MUTED "'>  ·  %ld in / %ld out</span>",
+            "<span size='small' weight='bold' foreground='" ALIBABA_ACCENT "'>$%.2f</span>"
+            "<span size='x-small' foreground='" TEXT_MUTED "'>  ·  %ld in / %ld out</span>",
             w->detail_data.daily[i].cost, w->detail_data.daily[i].input_tokens, w->detail_data.daily[i].output_tokens);
         GtkWidget *amount_label = gtk_label_new(NULL);
         gtk_label_set_markup(GTK_LABEL(amount_label), amount_markup);
@@ -787,8 +787,8 @@ void update_models_card(ModelsCardWidgets *w, DetailedBillingData *bd) {
     if (!bd->success) {
         char markup[512];
         snprintf(markup, sizeof(markup),
-                 "<span size='x-large' weight='bold' foreground='" DANGER_RED "'>Error</span>\n"
-                 "<span size='medium' foreground='" TEXT_MUTED "'>%s</span>", bd->error);
+                 "<span size='large' weight='bold' foreground='" DANGER_RED "'>Error</span>\n"
+                 "<span size='small' foreground='" TEXT_MUTED "'>%s</span>", bd->error);
         gtk_label_set_markup(GTK_LABEL(w->total_label), markup);
         return;
     }
@@ -809,12 +809,12 @@ void update_models_card(ModelsCardWidgets *w, DetailedBillingData *bd) {
     if (filtered_count > 0) {
         snprintf(markup, sizeof(markup),
                  "<span size='xx-large' weight='bold' foreground='" ALIBABA_ACCENT "'>$%.2f</span>\n"
-                 "<span size='medium' foreground='" TEXT_MUTED "'>USD · %d model%s</span>",
+                 "<span size='small' foreground='" TEXT_MUTED "'>USD · %d model%s</span>",
                  model_total, filtered_count, filtered_count == 1 ? "" : "s");
     } else {
         snprintf(markup, sizeof(markup),
                  "<span size='xx-large' weight='bold' foreground='" TEXT_MUTED "'>$0.00</span>\n"
-                 "<span size='medium' foreground='" TEXT_MUTED "'>No models in this region</span>");
+                 "<span size='small' foreground='" TEXT_MUTED "'>No models in this region</span>");
     }
     gtk_label_set_markup(GTK_LABEL(w->total_label), markup);
 
@@ -846,7 +846,7 @@ static GtkWidget *create_historical_card(HistoricalCardWidgets *w) {
 
     GtkWidget *title = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(title),
-        "<span size='medium' weight='bold' foreground='" ALIBABA_ORANGE "'"
+        "<span size='small' weight='bold' foreground='" ALIBABA_ORANGE "'"
         " letter_spacing='1024'>HISTORICAL SPEND (6 MONTHS)</span>");
     gtk_widget_set_halign(title, GTK_ALIGN_CENTER);
     gtk_box_append(GTK_BOX(card), title);
@@ -873,7 +873,7 @@ void update_historical_card(HistoricalCardWidgets *w, HistoricalBillingData *bd)
         clear_box(w->history_box);
         GtkWidget *err = gtk_label_new(NULL);
         gtk_label_set_markup(GTK_LABEL(err),
-            "<span size='x-large' weight='bold' foreground='" DANGER_RED "'>Error loading history</span>");
+            "<span size='large' weight='bold' foreground='" DANGER_RED "'>Error loading history</span>");
         gtk_box_append(GTK_BOX(w->history_box), err);
         return;
     }
@@ -893,7 +893,7 @@ void update_historical_card(HistoricalCardWidgets *w, HistoricalBillingData *bd)
             if (!first_month && month_total > 0) {
                 char total_label[256];
                 snprintf(total_label, sizeof(total_label),
-                    "<span size='medium' weight='bold' foreground='" ALIBABA_ORANGE "'>Month Total</span>");
+                    "<span size='small' weight='bold' foreground='" ALIBABA_ORANGE "'>Month Total</span>");
                 add_row(w->history_box, total_label, month_total,
                         ALIBABA_ORANGE, ALIBABA_ORANGE);
 
@@ -908,7 +908,7 @@ void update_historical_card(HistoricalCardWidgets *w, HistoricalBillingData *bd)
             GtkWidget *month_label = gtk_label_new(NULL);
             char month_markup[128];
             snprintf(month_markup, sizeof(month_markup),
-                "<span size='large' weight='bold' foreground='" TEXT_PRIMARY "'>%s</span>",
+                "<span size='medium' weight='bold' foreground='" TEXT_PRIMARY "'>%s</span>",
                 sorted[i].month);
             gtk_label_set_markup(GTK_LABEL(month_label), month_markup);
             gtk_widget_set_halign(month_label, GTK_ALIGN_START);
@@ -923,7 +923,7 @@ void update_historical_card(HistoricalCardWidgets *w, HistoricalBillingData *bd)
     if (!first_month && month_total > 0) {
         char total_label[256];
         snprintf(total_label, sizeof(total_label),
-            "<span size='medium' weight='bold' foreground='" ALIBABA_ORANGE "'>Month Total</span>");
+            "<span size='small' weight='bold' foreground='" ALIBABA_ORANGE "'>Month Total</span>");
         add_row(w->history_box, total_label, month_total,
                 ALIBABA_ORANGE, ALIBABA_ORANGE);
     }
@@ -961,7 +961,7 @@ static GtkWidget *create_proxy_card(ProxyCardWidgets *w) {
     // Title
     GtkWidget *title = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(title),
-        "<span size='medium' weight='bold' foreground='" ALIBABA_ORANGE "'"
+        "<span size='small' weight='bold' foreground='" ALIBABA_ORANGE "'"
         " letter_spacing='1024'>DASHSCOPE PROXY</span>");
     gtk_widget_set_halign(title, GTK_ALIGN_CENTER);
     gtk_box_append(GTK_BOX(card), title);
@@ -1041,7 +1041,7 @@ static GtkWidget *create_proxy_card(ProxyCardWidgets *w) {
     // Charts
     GtkWidget *chart1_label = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(chart1_label),
-        "<span size='medium' weight='bold' foreground='" TEXT_SECONDARY "'>Cost by Model</span>");
+        "<span size='small' weight='bold' foreground='" TEXT_SECONDARY "'>Cost by Model</span>");
     gtk_widget_set_halign(chart1_label, GTK_ALIGN_START);
     gtk_box_append(GTK_BOX(card), chart1_label);
 
@@ -1054,7 +1054,7 @@ static GtkWidget *create_proxy_card(ProxyCardWidgets *w) {
 
     GtkWidget *chart2_label = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(chart2_label),
-        "<span size='medium' weight='bold' foreground='" TEXT_SECONDARY "'>Daily Cost (30 days)</span>");
+        "<span size='small' weight='bold' foreground='" TEXT_SECONDARY "'>Daily Cost (30 days)</span>");
     gtk_widget_set_halign(chart2_label, GTK_ALIGN_START);
     gtk_widget_set_margin_top(chart2_label, 12);
     gtk_box_append(GTK_BOX(card), chart2_label);
@@ -1072,7 +1072,7 @@ static GtkWidget *create_proxy_card(ProxyCardWidgets *w) {
     // Today section
     GtkWidget *today_label = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(today_label),
-        "<span size='medium' weight='bold' foreground='" TEXT_SECONDARY "'>Today</span>");
+        "<span size='small' weight='bold' foreground='" TEXT_SECONDARY "'>Today</span>");
     gtk_widget_set_halign(today_label, GTK_ALIGN_START);
     gtk_box_append(GTK_BOX(card), today_label);
 
@@ -1086,7 +1086,7 @@ static GtkWidget *create_proxy_card(ProxyCardWidgets *w) {
     // Recent section
     GtkWidget *recent_label = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(recent_label),
-        "<span size='medium' weight='bold' foreground='" TEXT_SECONDARY "'>Recent Requests</span>");
+        "<span size='small' weight='bold' foreground='" TEXT_SECONDARY "'>Recent Requests</span>");
     gtk_widget_set_halign(recent_label, GTK_ALIGN_START);
     gtk_box_append(GTK_BOX(card), recent_label);
 
@@ -1167,7 +1167,7 @@ static void show_request_detail_inline(ProxyCardWidgets *w, long request_id) {
     if (!detail) {
         GtkWidget *error = gtk_label_new(NULL);
         gtk_label_set_markup(GTK_LABEL(error),
-            "<span size='large' foreground='" DANGER_RED "'>Failed to load request details</span>");
+            "<span size='medium' foreground='" DANGER_RED "'>Failed to load request details</span>");
         gtk_box_append(GTK_BOX(w->detail_content), error);
         return;
     }
@@ -1181,13 +1181,13 @@ static void show_request_detail_inline(ProxyCardWidgets *w, long request_id) {
 
     GtkWidget *id_label = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(id_label),
-        "<span size='large' foreground='" TEXT_SECONDARY "'>Request ID:</span>");
+        "<span size='medium' foreground='" TEXT_SECONDARY "'>Request ID:</span>");
     gtk_widget_set_halign(id_label, GTK_ALIGN_START);
     gtk_grid_attach(GTK_GRID(stats_grid), id_label, 0, row, 1, 1);
 
     char id_val[256];
     snprintf(id_val, sizeof(id_val),
-        "<span size='large' weight='bold' foreground='" TEXT_PRIMARY "'>#%ld</span>", detail->id);
+        "<span size='medium' weight='bold' foreground='" TEXT_PRIMARY "'>#%ld</span>", detail->id);
     GtkWidget *id_val_label = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(id_val_label), id_val);
     gtk_widget_set_halign(id_val_label, GTK_ALIGN_START);
@@ -1196,13 +1196,13 @@ static void show_request_detail_inline(ProxyCardWidgets *w, long request_id) {
 
     GtkWidget *model_label = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(model_label),
-        "<span size='large' foreground='" TEXT_SECONDARY "'>Model:</span>");
+        "<span size='medium' foreground='" TEXT_SECONDARY "'>Model:</span>");
     gtk_widget_set_halign(model_label, GTK_ALIGN_START);
     gtk_grid_attach(GTK_GRID(stats_grid), model_label, 0, row, 1, 1);
 
     char model_val[256];
     snprintf(model_val, sizeof(model_val),
-        "<span size='large' weight='bold' foreground='" ALIBABA_ACCENT "'>%s</span>", detail->model);
+        "<span size='medium' weight='bold' foreground='" ALIBABA_ACCENT "'>%s</span>", detail->model);
     GtkWidget *model_val_label = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(model_val_label), model_val);
     gtk_widget_set_halign(model_val_label, GTK_ALIGN_START);
@@ -1211,13 +1211,13 @@ static void show_request_detail_inline(ProxyCardWidgets *w, long request_id) {
 
     GtkWidget *time_label = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(time_label),
-        "<span size='large' foreground='" TEXT_SECONDARY "'>Timestamp:</span>");
+        "<span size='medium' foreground='" TEXT_SECONDARY "'>Timestamp:</span>");
     gtk_widget_set_halign(time_label, GTK_ALIGN_START);
     gtk_grid_attach(GTK_GRID(stats_grid), time_label, 0, row, 1, 1);
 
     char time_val[128];
     snprintf(time_val, sizeof(time_val),
-        "<span size='large' foreground='" TEXT_PRIMARY "'>%s</span>", detail->timestamp);
+        "<span size='medium' foreground='" TEXT_PRIMARY "'>%s</span>", detail->timestamp);
     GtkWidget *time_val_label = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(time_val_label), time_val);
     gtk_widget_set_halign(time_val_label, GTK_ALIGN_START);
@@ -1226,15 +1226,15 @@ static void show_request_detail_inline(ProxyCardWidgets *w, long request_id) {
 
     GtkWidget *status_label = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(status_label),
-        "<span size='large' foreground='" TEXT_SECONDARY "'>Status:</span>");
+        "<span size='medium' foreground='" TEXT_SECONDARY "'>Status:</span>");
     gtk_widget_set_halign(status_label, GTK_ALIGN_START);
     gtk_grid_attach(GTK_GRID(stats_grid), status_label, 0, row, 1, 1);
 
     const char *status_color = (detail->status_code >= 200 && detail->status_code < 300) ? SUCCESS_GREEN : DANGER_RED;
     char status_val[128];
     snprintf(status_val, sizeof(status_val),
-        "<span size='large' weight='bold' foreground='%s'>%d</span>"
-        "<span size='medium' foreground='" TEXT_MUTED "'> · %dms%s</span>",
+        "<span size='medium' weight='bold' foreground='%s'>%d</span>"
+        "<span size='small' foreground='" TEXT_MUTED "'> · %dms%s</span>",
         status_color, detail->status_code, detail->latency_ms,
         detail->stream ? " · streaming" : "");
     GtkWidget *status_val_label = gtk_label_new(NULL);
@@ -1250,7 +1250,7 @@ static void show_request_detail_inline(ProxyCardWidgets *w, long request_id) {
 
     GtkWidget *token_header = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(token_header),
-        "<span size='medium' weight='bold' foreground='" ALIBABA_ORANGE "'"
+        "<span size='small' weight='bold' foreground='" ALIBABA_ORANGE "'"
         " letter_spacing='1024'>TOKEN BREAKDOWN</span>");
     gtk_widget_set_halign(token_header, GTK_ALIGN_START);
     gtk_grid_attach(GTK_GRID(stats_grid), token_header, 0, row, 2, 1);
@@ -1268,7 +1268,7 @@ static void show_request_detail_inline(ProxyCardWidgets *w, long request_id) {
     for (int i = 0; i < 7; i++) {
         char lbl[128];
         snprintf(lbl, sizeof(lbl),
-            "<span size='medium' foreground='" TEXT_SECONDARY "'>%s:</span>", token_labels[i]);
+            "<span size='small' foreground='" TEXT_SECONDARY "'>%s:</span>", token_labels[i]);
         GtkWidget *lbl_widget = gtk_label_new(NULL);
         gtk_label_set_markup(GTK_LABEL(lbl_widget), lbl);
         gtk_widget_set_halign(lbl_widget, GTK_ALIGN_START);
@@ -1276,7 +1276,7 @@ static void show_request_detail_inline(ProxyCardWidgets *w, long request_id) {
 
         char val[64];
         snprintf(val, sizeof(val),
-            "<span size='medium' weight='bold' foreground='" TEXT_PRIMARY "'>%ld</span>", token_values[i]);
+            "<span size='small' weight='bold' foreground='" TEXT_PRIMARY "'>%ld</span>", token_values[i]);
         GtkWidget *val_widget = gtk_label_new(NULL);
         gtk_label_set_markup(GTK_LABEL(val_widget), val);
         gtk_widget_set_halign(val_widget, GTK_ALIGN_START);
@@ -1291,7 +1291,7 @@ static void show_request_detail_inline(ProxyCardWidgets *w, long request_id) {
 
     GtkWidget *cost_header = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(cost_header),
-        "<span size='medium' weight='bold' foreground='" ALIBABA_ORANGE "'"
+        "<span size='small' weight='bold' foreground='" ALIBABA_ORANGE "'"
         " letter_spacing='1024'>COST BREAKDOWN</span>");
     gtk_widget_set_halign(cost_header, GTK_ALIGN_START);
     gtk_grid_attach(GTK_GRID(stats_grid), cost_header, 0, row, 2, 1);
@@ -1308,7 +1308,7 @@ static void show_request_detail_inline(ProxyCardWidgets *w, long request_id) {
     for (int i = 0; i < 5; i++) {
         char lbl[128];
         snprintf(lbl, sizeof(lbl),
-            "<span size='medium' foreground='" TEXT_SECONDARY "'>%s:</span>", cost_labels[i]);
+            "<span size='small' foreground='" TEXT_SECONDARY "'>%s:</span>", cost_labels[i]);
         GtkWidget *lbl_widget = gtk_label_new(NULL);
         gtk_label_set_markup(GTK_LABEL(lbl_widget), lbl);
         gtk_widget_set_halign(lbl_widget, GTK_ALIGN_START);
@@ -1318,7 +1318,7 @@ static void show_request_detail_inline(ProxyCardWidgets *w, long request_id) {
         const char *weight = (i == 4) ? "bold" : "normal";
         char val[256];
         snprintf(val, sizeof(val),
-            "<span size='medium' weight='%s' foreground='%s'>$%.6f</span>", weight, cost_color, cost_values[i]);
+            "<span size='small' weight='%s' foreground='%s'>$%.6f</span>", weight, cost_color, cost_values[i]);
         GtkWidget *val_widget = gtk_label_new(NULL);
         gtk_label_set_markup(GTK_LABEL(val_widget), val);
         gtk_widget_set_halign(val_widget, GTK_ALIGN_START);
@@ -1613,7 +1613,7 @@ static void draw_proxy_doughnut_chart(GtkDrawingArea *area, cairo_t *cr,
     snprintf(total_str, sizeof(total_str), "$%.2f", total_cost);
     cairo_set_source_rgb(cr, 0.816, 0.816, 0.816);
     cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-    cairo_set_font_size(cr, 20);
+    cairo_set_font_size(cr, 18);
     cairo_text_extents_t extents;
     cairo_text_extents(cr, total_str, &extents);
     cairo_move_to(cr, cx - extents.width/2, cy + extents.height/2);
@@ -1626,7 +1626,7 @@ static void draw_proxy_doughnut_chart(GtkDrawingArea *area, cairo_t *cr,
     double line_height = 24;
 
     cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-    cairo_set_font_size(cr, 14);
+    cairo_set_font_size(cr, 12);
 
     for (int i = 0; i < count && i < 10; i++) {
         // Draw color box
@@ -1683,7 +1683,7 @@ static void draw_proxy_daily_bar_chart(GtkDrawingArea *area, cairo_t *cr,
         if (i % 5 == 0) {
             cairo_set_source_rgb(cr, 0.667, 0.667, 0.667);
             cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-            cairo_set_font_size(cr, 14);
+            cairo_set_font_size(cr, 10);
             cairo_text_extents_t extents;
             cairo_text_extents(cr, daily[i].day + 5, &extents);
             cairo_move_to(cr, x + bar_width/2 - extents.width/2, height - margin_bottom + 15);
@@ -1693,7 +1693,7 @@ static void draw_proxy_daily_bar_chart(GtkDrawingArea *area, cairo_t *cr,
 
     cairo_set_source_rgb(cr, 0.667, 0.667, 0.667);
     cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-    cairo_set_font_size(cr, 14);
+    cairo_set_font_size(cr, 10);
 
     for (int i = 0; i <= 4; i++) {
         double y = height - margin_bottom - (i * chart_height / 4);
@@ -1770,13 +1770,13 @@ static void on_settings_clicked(GtkButton *button, gpointer user_data) {
 
     GtkWidget *title = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(title),
-        "<span size='x-large' weight='bold' foreground='" ALIBABA_ORANGE "'>API Credentials</span>");
+        "<span size='large' weight='bold' foreground='" ALIBABA_ORANGE "'>API Credentials</span>");
     gtk_widget_set_halign(title, GTK_ALIGN_START);
     gtk_box_append(GTK_BOX(box), title);
 
     GtkWidget *hint = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(hint),
-        "<span size='small' foreground='" TEXT_MUTED "'>Requires AliyunBSSReadOnlyAccess policy</span>");
+        "<span size='x-small' foreground='" TEXT_MUTED "'>Requires AliyunBSSReadOnlyAccess policy</span>");
     gtk_widget_set_halign(hint, GTK_ALIGN_START);
     gtk_box_append(GTK_BOX(box), hint);
 
@@ -1786,7 +1786,7 @@ static void on_settings_clicked(GtkButton *button, gpointer user_data) {
 
     GtkWidget *id_label = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(id_label),
-        "<span size='medium' foreground='" TEXT_SECONDARY "'>Access Key ID</span>");
+        "<span size='small' foreground='" TEXT_SECONDARY "'>Access Key ID</span>");
     gtk_widget_set_halign(id_label, GTK_ALIGN_START);
     gtk_box_append(GTK_BOX(box), id_label);
 
@@ -1799,7 +1799,7 @@ static void on_settings_clicked(GtkButton *button, gpointer user_data) {
 
     GtkWidget *secret_label = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(secret_label),
-        "<span size='medium' foreground='" TEXT_SECONDARY "'>Access Key Secret</span>");
+        "<span size='small' foreground='" TEXT_SECONDARY "'>Access Key Secret</span>");
     gtk_widget_set_halign(secret_label, GTK_ALIGN_START);
     gtk_box_append(GTK_BOX(box), secret_label);
 
@@ -1855,7 +1855,7 @@ void build_ui(GtkApplication *app) {
 
     GtkWidget *logo = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(logo),
-        "<span size='xx-large' weight='bold' foreground='" ALIBABA_ACCENT "'>Alibaba Cloud</span>");
+        "<span size='x-large' weight='bold' foreground='" ALIBABA_ACCENT "'>Alibaba Cloud</span>");
     gtk_center_box_set_center_widget(GTK_CENTER_BOX(header), logo);
 
     GtkWidget *gear_btn = gtk_button_new_with_label("\xe2\x9a\x99");
