@@ -1,3 +1,5 @@
+#ifndef _WIN32
+/* Proxy server - Unix/Linux only (requires POSIX sockets, pthreads) */
 #include "proxy.h"
 #include <sqlite3.h>
 #include <json-c/json.h>
@@ -1650,3 +1652,69 @@ ProxyDailyRow *proxy_query_daily_series(int days, int *out_count) {
 void proxy_free_rows(void *rows) {
     free(rows);
 }
+
+#else /* _WIN32 */
+/* Stub implementations for Windows - proxy disabled */
+#include "proxy.h"
+#include <stdio.h>
+
+void proxy_init(void) {
+    fprintf(stderr, "[proxy] Disabled on Windows\n");
+}
+
+void proxy_shutdown(void) {
+    /* no-op */
+}
+
+ProxyStatus proxy_get_status(void) {
+    ProxyStatus status = {0};
+    status.running = 0;
+    return status;
+}
+
+ProxyModelRow *proxy_query_summary(int *out_count) {
+    *out_count = 0;
+    return NULL;
+}
+
+ProxyModelRow *proxy_query_daily_models(const char *day, int *out_count) {
+    (void)day;
+    *out_count = 0;
+    return NULL;
+}
+
+ProxyModelRow *proxy_query_monthly(const char *ym, int *out_count) {
+    (void)ym;
+    *out_count = 0;
+    return NULL;
+}
+
+ProxyRequestRow *proxy_query_recent(int limit, int *out_count) {
+    (void)limit;
+    *out_count = 0;
+    return NULL;
+}
+
+ProxyDailyRow *proxy_query_daily_series(int days, int *out_count) {
+    (void)days;
+    *out_count = 0;
+    return NULL;
+}
+
+void proxy_free_rows(void *rows) {
+    free(rows);
+}
+
+ProxyRequestDetail *proxy_query_request_detail(long id) {
+    (void)id;
+    return NULL;
+}
+
+void proxy_free_request_detail(ProxyRequestDetail *detail) {
+    if (detail) {
+        if (detail->request_messages) free(detail->request_messages);
+        if (detail->response_content) free(detail->response_content);
+        free(detail);
+    }
+}
+#endif /* _WIN32 */
